@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Library</title>
+</head>
+<body>
+<h1>Library</h1>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+        <div style="
+                padding:10px;
+                margin-bottom:10px;
+                border-radius:5px;
+                background-color: {% if category == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
+                color: {% if category == 'success' %}#155724{% else %}#721c24{% endif %};
+                ">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endwith %}
+<form method="get" action="/">
+
+    <div style="margin-bottom:10px;">
+        <strong><label for="search">Search:</label></strong>
+        <label>
+            <input type="text" name="search" placeholder="Search by title, author, ISBN..."
+                   value="{{ request.args.get('search','') }}" style=" width:500px;">
+        </label>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <strong>Sort by:</strong>
+
+        <label>
+            <input type="radio" name="sort" value="title"
+                   {% if request.args.get('sort') == 'title' %}checked{% endif %}>
+            Title
+        </label>
+
+        <label>
+            <input type="radio" name="sort" value="author"
+                   {% if request.args.get('sort') == 'author' %}checked{% endif %}>
+            Author
+        </label>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 20px;">
+        <strong>Direction:</strong>
+
+        <label>
+            <input type="radio" name="direction" value="asc"
+                   {% if request.args.get('direction') == 'asc' %}checked{% endif %}>
+            Asc
+        </label>
+
+        <label>
+            <input type="radio" name="direction" value="desc"
+                   {% if request.args.get('direction') == 'desc' %}checked{% endif %}>
+            Desc
+        </label>
+    </div>
+    <br>
+
+    <input type="submit" value="Read"> <br><br>
+
+</form>
+
+{% for book in books %}
+    <div style="display: flex; align-items: center; gap: 20px;">
+        {% if book.isbn %}
+            <img
+                    src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+                    alt="Cover von {{ book.title }}"
+                    width="80">
+
+        {% else %}
+            <span>No cover</span>
+        {% endif %}
+
+        <h3>{{ book }}</h3>
+        <form method="post" action="/book/{{ book.id }}/delete"
+              onsubmit="return confirm('Delete this book?');">
+            <input type="submit" value="Delete">
+        </form>
+    </div>   <br><br>
+{% endfor %}
+<div style="display: flex; align-items: center; gap: 20px;">
+    <form method="get" action="/add_author"><input type="submit" value="Go to add author"></form>
+    <form method="get" action="/add_book"><input type="submit" value="Go to add book"></form>
+</div>
+</body>
+</html>
