@@ -46,10 +46,8 @@ def add_author():
         db.session.add(new_author)
         db.session.commit()
 
-        return (f"Author id: {new_author.id} <br>name: {new_author.name} <br>Birthdate: {new_author.birth_date} <br>"
-                f"Date of death: {new_author.date_of_death if new_author.date_of_death else ''} <br><strong>successfully added!</strong><br><br>"
-                f"<form action='/add_author' method='GET'>"
-                f"<input type='submit' value='Go to add Author'></form>")
+        flash(f"Author '{new_author.name}' was successfully added!", "success")
+        return redirect(url_for('home'))
 
     return render_template('add_author.html')
 
@@ -70,13 +68,10 @@ def add_book():
         db.session.add(new_book)
         db.session.commit()
 
-        author_name = new_book.author.name if new_book.author else None
-        return (f"Book id: {new_book.id} <br>ISBN: {new_book.isbn} <br>Author: {author_name} <br>"
-                f"Title: {new_book.title}, <br>Publication year: {new_book.publication_year}<br><strong>successfully added!</strong><br><br>"
-                f"<form action='/add_book' method='GET'>"
-                f"<input type='submit' value='Go to add Book'></form>")
+        flash(f"Book '{new_book.title}' was successfully added!", "success")
+        return redirect(url_for('home'))
 
-    authors = Author.query.all()
+    authors = Author.query.order_by(Author.name).all()
     return render_template('add_book.html', authors=authors)
 
 
@@ -134,19 +129,34 @@ def delete_book(book_id):
         return redirect(url_for('home'))
 
     title = book.title
-    author_id = book.author_id
+    author = book.author
 
     db.session.delete(book)
+    db.session.flush()
+
+    if author and len(author.books) == 0:
+        db.session.delete(author)
+
     db.session.commit()
 
-    remaining_book = Book.query.filter_by(author_id=author_id).first()
-    if not remaining_book:
-        author = db.session.get(Author, author_id)
-        if author:
-            db.session.delete(author)
-            db.session.commit()
-
     flash(f"Book '{title}' was successfully deleted!", "success")
+    return redirect(url_for('home'))
+
+
+@app.route('/author/<int:author_id>/delete', methods=['POST'])
+def delete_author(author_id):
+    author = db.session.get(Author, author_id)
+
+    if not author:
+        flash("Author not found", "error")
+        return redirect(url_for('home'))
+
+    name = author.name
+
+    db.session.delete(author)
+    db.session.commit()
+
+    flash(f"Author '{name}' was successfully deleted!", "success")
     return redirect(url_for('home'))
 
 

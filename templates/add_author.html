@@ -3,20 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Author</title>
-</head>
-<body>
-<form action="/add_author" method="POST">
-    <label for="name">Author Name:</label>
-    <input type="text" id="name" name="name" style=" width:500px;" required><br><br>
+    <title>Add Author</title>
 
-    <label for="birth_date">Birthdate:</label>
-    <input type="date" id="birth_date" name="birth_date" required><br><br>
-    <label for="date_of_death">Date of Death:</label>
-    <input type="date" id="date_of_death" name="date_of_death"><br><br>
-    <input type="submit" value="Add Author">
-</form>
-<form method="get" action="/"><input type="submit" value="Go home"></form>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+<div class="form-container">
+    <h2>✍️ Add New Author</h2>
+
+    <form action="/add_author" method="POST" class="form-card">
+
+        <div class="form-group">
+            <label for="name">Author Name</label>
+            <input type="text" id="name" name="name" placeholder="Enter author name" required>
+        </div>
+
+        <div class="form-group">
+            <label for="birth_date">Birthdate</label>
+            <input type="date" id="birth_date" name="birth_date" required>
+        </div>
+
+        <div class="form-group">
+            <label for="date_of_death">Date of Death</label>
+            <input type="date" id="date_of_death" name="date_of_death">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Add Author</button>
+            <a href="/" class="btn-secondary">Cancel</a>
+        </div>
+
+    </form>
+</div>
+
 </body>
 </html>

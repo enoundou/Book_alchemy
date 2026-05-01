@@ -5,91 +5,132 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Library</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-<h1>Library</h1>
+<div class="top-bar">
+    <h1>📚 Library</h1>
+    <div class="actions">
+        <a href="/add_book">Add Book</a>
+        <a href="/add_author">Add Author</a>
+    </div>
+</div>
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% for category, message in messages %}
-        <div style="
-                padding:10px;
-                margin-bottom:10px;
-                border-radius:5px;
-                background-color: {% if category == 'success' %}#d4edda{% else %}#f8d7da{% endif %};
-                color: {% if category == 'success' %}#155724{% else %}#721c24{% endif %};
-                ">
-            {{ message }}
-        </div>
+        <div class="flash">{{ message }}</div>
     {% endfor %}
 {% endwith %}
-<form method="get" action="/">
 
-    <div style="margin-bottom:10px;">
-        <strong><label for="search">Search:</label></strong>
-        <label>
-            <input type="text" name="search" placeholder="Search by title, author, ISBN..."
-                   value="{{ request.args.get('search','') }}" style=" width:500px;">
-        </label>
-    </div>
+<form method="get" action="/" class="filters">
+    <label><strong>Search:</strong></label>
+    <input class="search-input" type="text" name="search"
+           placeholder="Search by title, author, ISBN..."
+           value="{{ request.args.get('search','') }}">
 
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="row">
         <strong>Sort by:</strong>
+        <label><input type="radio" name="sort" value="title"
+                      {% if request.args.get('sort') == 'title' %}checked{% endif %}> Title</label>
 
-        <label>
-            <input type="radio" name="sort" value="title"
-                   {% if request.args.get('sort') == 'title' %}checked{% endif %}>
-            Title
-        </label>
-
-        <label>
-            <input type="radio" name="sort" value="author"
-                   {% if request.args.get('sort') == 'author' %}checked{% endif %}>
-            Author
-        </label>
+        <label><input type="radio" name="sort" value="author"
+                      {% if request.args.get('sort') == 'author' %}checked{% endif %}> Author</label>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 20px;">
+    <div class="row">
         <strong>Direction:</strong>
+        <label><input type="radio" name="direction" value="asc"
+                      {% if request.args.get('direction') == 'asc' %}checked{% endif %}> Asc</label>
 
-        <label>
-            <input type="radio" name="direction" value="asc"
-                   {% if request.args.get('direction') == 'asc' %}checked{% endif %}>
-            Asc
-        </label>
-
-        <label>
-            <input type="radio" name="direction" value="desc"
-                   {% if request.args.get('direction') == 'desc' %}checked{% endif %}>
-            Desc
-        </label>
+        <label><input type="radio" name="direction" value="desc"
+                      {% if request.args.get('direction') == 'desc' %}checked{% endif %}> Desc</label>
     </div>
+
     <br>
-
-    <input type="submit" value="Read"> <br><br>
-
+    <button type="submit">Apply</button>
+    <a href="/">Reset</a>
 </form>
 
-{% for book in books %}
-    <div style="display: flex; align-items: center; gap: 20px;">
-        {% if book.isbn %}
-            <img
-                    src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
-                    alt="Cover von {{ book.title }}"
-                    width="80">
 
-        {% else %}
-            <span>No cover</span>
-        {% endif %}
+<div class="book-grid">
+    {% for book in books %}
+        <div class="book-card">
+            {% if book.isbn %}
+                <img class="book-cover"
+                     src="https://covers.openlibrary.org/b/isbn/{{ book.isbn }}-M.jpg"
+                     alt="Cover von {{ book.title }}">
+            {% else %}
+                <p>No cover</p>
+            {% endif %}
 
-        <h3>{{ book }}</h3>
-        <form method="post" action="/book/{{ book.id }}/delete"
-              onsubmit="return confirm('Delete this book?');">
-            <input type="submit" value="Delete">
-        </form>
-    </div>   <br><br>
-{% endfor %}
-<div style="display: flex; align-items: center; gap: 20px;">
-    <form method="get" action="/add_author"><input type="submit" value="Go to add author"></form>
-    <form method="get" action="/add_book"><input type="submit" value="Go to add book"></form>
+            <h3>{{ book.title }}</h3>
+            <p>
+                <strong>Author:</strong> {{ book.author.name if book.author else "Unknown" }}
+
+                {% if book.author %}
+                    <form method="post"
+                          action="{{ url_for('delete_author', author_id=book.author.id) }}"
+                          style="display:inline;">
+
+                        <button type="button"
+                                class="delete-btn"
+                                style="background:#6c757d;"
+                                onclick="confirmDeleteAuthor(this.form, '{{ book.author.name }}')">
+                            Delete Author
+                        </button>
+
+                    </form>
+                {% endif %}
+            </p>
+            <p><strong>Year:</strong> {{ book.publication_year }}</p>
+            <p><strong>ISBN:</strong> {{ book.isbn }}</p>
+
+            <form method="post" action="/book/{{ book.id }}/delete">
+                <button type="button"
+                        class="delete-btn"
+                        onclick="confirmDelete(this.form)">
+                    Delete Book
+                </button>
+            </form>
+        </div>
+    {% endfor %}
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function confirmDelete(form) {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This book will be deleted!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d9534f',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>
+<script>
+    function confirmDeleteAuthor(form, authorName) {
+        Swal.fire({
+            title: '⚠️ Delete Author?',
+            text: `Author "${authorName}" and ALL their books will be deleted!`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#6c757d',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Yes, delete author',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
+    }
+</script>
 </body>
 </html>
