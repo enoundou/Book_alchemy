@@ -145,6 +145,11 @@ def delete_book(book_id):
 
 @app.route('/author/<int:author_id>/delete', methods=['POST'])
 def delete_author(author_id):
+    """
+    delete author with id= author_id
+    :param author_id: id of author
+    :return: redirect to home page
+    """
     author = db.session.get(Author, author_id)
 
     if not author:

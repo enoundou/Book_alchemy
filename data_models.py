@@ -2,7 +2,7 @@ from flask_sqlalchemy import SQLAlchemy
 
 db = SQLAlchemy()
 
-class Author(db.Model):
+class Author(db.Model): # type: ignore
     __tablename__ = 'authors'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -19,7 +19,7 @@ class Author(db.Model):
 
 
 
-class Book(db.Model):
+class Book(db.Model):   # type: ignore
     __tablename__ = 'books'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     author_id = db.Column(db.Integer, db.ForeignKey('authors.id'), nullable=False)
